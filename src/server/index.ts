@@ -11,6 +11,13 @@ setupDatabase();
 
 app.use(bodyParser());
 
+app.get('/api/userId/', async (req, res) => {
+  if (req.headers['token']) {
+    res.send(await verifyGoogleToken(req.headers['token'] as string));
+    return;
+  }
+  res.send('NO_TOKEN');
+});
 app.get('/api/dsl/:id', async (req, res) => {
   res.send((await getDsl(Number(req.params['id']))) || '404');
 });

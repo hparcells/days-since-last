@@ -42,6 +42,7 @@ function Creation({ login }: { login: LoginInfo }) {
 
   return login ? (
     <div>
+      {login}
       <h1>Create a New Counter</h1>
       <div style={{ maxWidth: '900px', margin: 'auto' }}>
         <span>
@@ -49,7 +50,7 @@ function Creation({ login }: { login: LoginInfo }) {
         </span>
 
         <p>Will be displayed as:</p>
-        <p style={{ margin: '1em' }}>Days Since Last {name}</p>
+        <p style={{ margin: '1em' }}>2 Days 15 Hours 23 Seconds Since Last {name}</p>
 
         <button onClick={handleSubmit}>Submit</button>
 
