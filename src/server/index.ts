@@ -1,8 +1,9 @@
-import { io, app } from 'fullstack-system';
+import { app, rootRouter } from 'fullstack-system';
 import { config as setupDotEnv } from 'dotenv';
 import bodyParser from 'body-parser';
 
-import { setupDatabase } from './database';
+import { setupDatabase, getDsl, addDsl } from './database';
+import { verifyGoogleToken } from './utils/verify-google-token';
 
 setupDotEnv();
 
@@ -10,6 +11,22 @@ setupDatabase();
 
 app.use(bodyParser());
 
-app.get('/api/test', (req, res) => {
-  res.end('It Works!');
+app.get('/api/dsl/:id', async (req, res) => {
+  res.send((await getDsl(Number(req.params['id']))) || '404');
+});
+app.post('/api/dsl/create', async (req, res) => {
+  const token = await verifyGoogleToken(req.body.token);
+  if (token) {
+    const newId = await addDsl(req.body.name, token);
+
+    res.send({ status: 'SUCCESS', id: newId });
+    return;
+  }
+
+  res.send('FAILURE');
+});
+
+app.get('*', (req, res, next) => {
+  req.url = '/';
+  rootRouter(req, res, next);
 });

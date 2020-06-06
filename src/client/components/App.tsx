@@ -1,10 +1,41 @@
-import React from 'react';
+import React, { useState } from 'react';
 import { BrowserRouter as Router, Switch, Route, Link } from 'react-router-dom';
 
+import AppBar from './AppBar';
+import Home from '../pages/Home';
+import Creation from '../pages/Creation';
+import DaysSinceLast from '../pages/DaysSinceLast';
+
+import { LoginInfo } from '../types';
+
 function App() {
+  const [login, setLogin] = useState<LoginInfo>(null as any);
+
+  function handleLogin(googleUser: any) {
+    setLogin({
+      name: googleUser.getBasicProfile().getName(),
+      profilePicture: googleUser.getBasicProfile().getImageUrl(),
+      token: googleUser.getAuthResponse().id_token
+    });
+  }
+
   return (
     <Router>
-      <p>Okay.</p>
+      <AppBar login={login} handleLogin={handleLogin} />
+
+      <div style={{ maxWidth: '1000px', margin: 'auto' }}>
+        <Switch>
+          <Route path='/dsl/:dslId'>
+            <DaysSinceLast />
+          </Route>
+          <Route path='/create'>
+            <Creation login={login} />
+          </Route>
+          <Route exact path='/'>
+            <Home />
+          </Route>
+        </Switch>
+      </div>
     </Router>
   );
 }
