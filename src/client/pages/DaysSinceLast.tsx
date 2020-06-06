@@ -1,5 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import { useParams } from 'react-router-dom';
+import { plural } from '@reverse/string';
+import axios from 'axios';
 
 import { fetchDsl } from '../logic/dsl';
 
@@ -7,7 +9,9 @@ import Counter from '../components/Counter';
 
 import { TimeData } from '../types';
 
-function DaysSinceLast() {
+let updateInterval: NodeJS.Timeout;
+
+function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
   const { dslId } = useParams();
 
   const [dslData, setDslData] = useState(null as any);
@@ -42,13 +46,24 @@ function DaysSinceLast() {
 
     setTimeData({ years, days, hours, minutes, seconds: Math.round(totalSeconds) });
   }
+  async function handleResetClick() {
+    const response = await axios.post('/api/dsl/reset', {
+      token,
+      id: dslData.id
+    });
+
+    if (response.data === 'SUCCESS') {
+      clearInterval(updateInterval);
+      getDslData();
+    }
+  }
 
   useEffect(() => {
     getDslData();
   }, []);
   useEffect(() => {
     updateTimeData();
-    setInterval(() => {
+    updateInterval = setInterval(() => {
       updateTimeData();
     }, 1000);
   }, [dslData]);
@@ -71,6 +86,16 @@ function DaysSinceLast() {
           <span style={{ fontSize: '36px', textAlign: 'center', marginTop: '0.5em' }}>
             Since Last {dslData.name}
           </span>
+
+          <p>
+            This counter has been reset {dslData.triggers} {plural(dslData.triggers, 'time')}.
+          </p>
+
+          {dslData.createdBy === userId && (
+            <div>
+              <button onClick={handleResetClick}>Reset to 0</button>
+            </div>
+          )}
         </div>
       ) : (
         'Loading...'

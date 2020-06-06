@@ -2,7 +2,7 @@ import { app, rootRouter } from 'fullstack-system';
 import { config as setupDotEnv } from 'dotenv';
 import bodyParser from 'body-parser';
 
-import { setupDatabase, getDsl, addDsl } from './database';
+import { setupDatabase, getDsl, addDsl, idExists, resetDsl } from './database';
 import { verifyGoogleToken } from './utils/verify-google-token';
 
 setupDotEnv();
@@ -13,7 +13,9 @@ app.use(bodyParser());
 
 app.get('/api/userId/', async (req, res) => {
   if (req.headers['token']) {
-    res.send(await verifyGoogleToken(req.headers['token'] as string));
+    res.send({
+      userId: await verifyGoogleToken(req.headers['token'] as string)
+    });
     return;
   }
   res.send('NO_TOKEN');
@@ -27,6 +29,17 @@ app.post('/api/dsl/create', async (req, res) => {
     const newId = await addDsl(req.body.name, token);
 
     res.send({ status: 'SUCCESS', id: newId });
+    return;
+  }
+
+  res.send('FAILURE');
+});
+app.post('/api/dsl/reset', async (req, res) => {
+  const token = await verifyGoogleToken(req.body.token);
+  if (token && idExists(req.body.id)) {
+    resetDsl(req.body.id);
+
+    res.send('SUCCESS');
     return;
   }
 

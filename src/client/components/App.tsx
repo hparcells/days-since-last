@@ -19,7 +19,7 @@ function App() {
       name: googleUser.getBasicProfile().getName(),
       profilePicture: googleUser.getBasicProfile().getImageUrl(),
       token: idToken,
-      userId: (await axios.get('/api/userId', { headers: { token: idToken } })).data
+      userId: await (await axios.get('/api/userId', { headers: { token: idToken } })).data.userId
     });
   }
 
@@ -30,10 +30,10 @@ function App() {
       <div style={{ maxWidth: '1000px', margin: 'auto' }}>
         <Switch>
           <Route path='/dsl/:dslId'>
-            <DaysSinceLast />
+            <DaysSinceLast userId={login && login.userId} token={login && login.token} />
           </Route>
           <Route path='/create'>
-            <Creation login={login} />
+            <Creation token={login && login.token} />
           </Route>
           <Route exact path='/'>
             <Home />

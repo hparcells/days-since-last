@@ -1,10 +1,9 @@
 import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
-import { LoginInfo } from '../types';
 import { submitDsl } from '../logic/dsl';
 
-function Creation({ login }: { login: LoginInfo }) {
+function Creation({ token }: { token: string }) {
   const history = useHistory();
 
   const [name, setName] = useState<string>('Incident');
@@ -30,7 +29,7 @@ function Creation({ login }: { login: LoginInfo }) {
       return;
     }
 
-    const response = await submitDsl(name.trim(), login.token);
+    const response = await submitDsl(name.trim(), token);
     if (response.data.status === 'SUCCESS') {
       setCanSubmit(true);
       history.push(`/dsl/${response.data.id}`);
@@ -40,7 +39,7 @@ function Creation({ login }: { login: LoginInfo }) {
     }
   }
 
-  return login ? (
+  return token ? (
     <div>
       <h1>Create a New Counter</h1>
       <div style={{ maxWidth: '900px', margin: 'auto' }}>
@@ -51,7 +50,9 @@ function Creation({ login }: { login: LoginInfo }) {
         <p>Will be displayed as:</p>
         <p style={{ margin: '1em' }}>2 Days 15 Hours 23 Seconds Since Last {name}</p>
 
-        <button onClick={handleSubmit}>Submit</button>
+        <button onClick={handleSubmit} disabled={!canSubmit}>
+          Submit
+        </button>
 
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>

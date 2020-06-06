@@ -39,3 +39,8 @@ export async function addDsl(name: string, createdBy: string) {
 
   return id;
 }
+export async function resetDsl(id: number) {
+  return await database
+    .collection('dsls')
+    .updateOne({ id }, { $inc: { triggers: 1 }, $set: { lastTrigger: Date.now() } });
+}

@@ -10,7 +10,7 @@ function Counter({ value, label }: { value: number; label: string }) {
         margin: '0em 1em'
       }}
     >
-      <span style={{ fontSize: '36px' }}>{value}</span>
+      <span style={{ fontSize: '36px' }}>{String(value).padStart(2, '0')}</span>
       <span>{label}</span>
     </div>
   );
