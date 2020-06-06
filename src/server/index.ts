@@ -2,7 +2,17 @@ import { app, rootRouter } from 'fullstack-system';
 import { config as setupDotEnv } from 'dotenv';
 import bodyParser from 'body-parser';
 
-import { setupDatabase, getDsl, addDsl, idExists, resetDsl } from './database';
+import {
+  setupDatabase,
+  getDsl,
+  addDsl,
+  idExists,
+  resetDsl,
+  profileExists,
+  createProfile,
+  getProfile,
+  getProfileDsls
+} from './database';
 import { verifyGoogleToken } from './utils/verify-google-token';
 
 setupDotEnv();
@@ -40,6 +50,32 @@ app.post('/api/dsl/reset', async (req, res) => {
     resetDsl(req.body.id);
 
     res.send('SUCCESS');
+    return;
+  }
+
+  res.send('FAILURE');
+});
+app.post('/api/profile/create', async (req, res) => {
+  const token = await verifyGoogleToken(req.body.token);
+  if (token && !profileExists(req.body.id)) {
+    createProfile(req.body);
+
+    res.send('SUCCESS');
+    return;
+  }
+
+  res.send('FAILURE');
+});
+app.get('/api/profile/:userId', async (req, res) => {
+  if (await profileExists(req.params.userId)) {
+    res.send(await getProfile(req.params.userId));
+    return;
+  }
+  res.send('FAILURE');
+});
+app.get('/api/profile/dsls/:userId', async (req, res) => {
+  if (profileExists(req.params.userId)) {
+    res.send(await getProfileDsls(req.params.userId));
     return;
   }
 
