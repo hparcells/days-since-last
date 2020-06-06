@@ -2,28 +2,67 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
 
-import { Profile as IProfile, BasicDsl } from '../../shared/types';
+import { Profile as IProfile, BasicDsl, LoginInfo } from '../../shared/types';
 
-function DslListItem({ name, id }: { name: string; id: number }) {
+function DslListItem({
+  name,
+  id,
+  admin,
+  token,
+  refreshList
+}: {
+  name: string;
+  id: number;
+  admin: boolean;
+  token: string;
+  refreshList: () => void;
+}) {
   const history = useHistory();
+
+  const [optionsOpen, setOptionsOpen] = useState<boolean>(false);
 
   function handleClick() {
     history.push(`/dsl/${id}`);
   }
+  async function handleDeleteClick() {
+    const response = (
+      await axios.post('/api/dsl/delete', {
+        id,
+        token
+      })
+    ).data;
+
+    if (response === 'SUCCESS') {
+      refreshList();
+    }
+  }
 
   return (
-    <li onClick={handleClick} style={{ cursor: 'default' }}>
-      Time Since Last {name}
-    </li>
+    <div style={{ cursor: 'default', userSelect: 'none' }}>
+      <li onClick={handleClick}>Time Since Last {name}</li>
+      {admin && (
+        <div>
+          <ul>
+            <li onClick={handleDeleteClick}>Delete</li>
+          </ul>
+        </div>
+      )}
+    </div>
   );
 }
 
-function Profile() {
+function Profile({ userId: loginUserId, token }: { userId: string; token: string }) {
   const { userId } = useParams();
 
   const [profileData, setProfileData] = useState<IProfile | '404'>(null as any);
   const [profileDsls, setProfileDsls] = useState<BasicDsl[]>(null as any);
 
+  async function refreshList() {
+    const dslsResponse = (await axios.get(`/api/profile/dsls/${userId}`)).data;
+    if (dslsResponse !== 'FAILURE') {
+      setProfileDsls(dslsResponse);
+    }
+  }
   useEffect(() => {
     (async () => {
       const profileResponse = (await axios.get(`/api/profile/${userId}`)).data;
@@ -33,10 +72,7 @@ function Profile() {
         setProfileData('404');
       }
 
-      const dslsResponse = (await axios.get(`/api/profile/dsls/${userId}`)).data;
-      if (dslsResponse !== 'FAILURE') {
-        setProfileDsls(dslsResponse);
-      }
+      refreshList();
     })();
   }, []);
 
@@ -62,7 +98,16 @@ function Profile() {
               <ul>
                 {profileDsls
                   ? profileDsls.map((dsl) => {
-                      return <DslListItem key={dsl.id} name={dsl.name} id={dsl.id} />;
+                      return (
+                        <DslListItem
+                          key={dsl.id}
+                          name={dsl.name}
+                          id={dsl.id}
+                          admin={loginUserId === userId}
+                          refreshList={refreshList}
+                          token={token}
+                        />
+                      );
                     })
                   : 'Loading...'}
               </ul>

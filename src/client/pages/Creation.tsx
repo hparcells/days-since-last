@@ -2,6 +2,7 @@ import React, { useState } from 'react';
 import { useHistory } from 'react-router-dom';
 
 import { submitDsl } from '../logic/dsl';
+import Button from '../components/Button/Button';
 
 function Creation({ token }: { token: string }) {
   const history = useHistory();
@@ -48,11 +49,13 @@ function Creation({ token }: { token: string }) {
         </span>
 
         <p>Will be displayed as:</p>
-        <p style={{ margin: '1em' }}>2 Days 15 Hours 23 Seconds Since Last {name}</p>
+        <p style={{ margin: '1em' }}>
+          It Has Been 2 Days 15 Hours 23 Seconds Since The Last {name}
+        </p>
 
-        <button onClick={handleSubmit} disabled={!canSubmit}>
+        <Button onClick={handleSubmit} disabled={!canSubmit}>
           Submit
-        </button>
+        </Button>
 
         {error && <p style={{ color: 'red' }}>{error}</p>}
       </div>

@@ -11,7 +11,8 @@ import {
   profileExists,
   createProfile,
   getProfile,
-  getProfileDsls
+  getProfileDsls,
+  deleteDsl
 } from './database';
 import { verifyGoogleToken } from './utils/verify-google-token';
 
@@ -48,6 +49,17 @@ app.post('/api/dsl/reset', async (req, res) => {
   const token = await verifyGoogleToken(req.body.token);
   if (token && idExists(req.body.id)) {
     resetDsl(req.body.id);
+
+    res.send('SUCCESS');
+    return;
+  }
+
+  res.send('FAILURE');
+});
+app.post('/api/dsl/delete', async (req, res) => {
+  const token = await verifyGoogleToken(req.body.token);
+  if (token && idExists(req.body.id)) {
+    deleteDsl(req.body.id);
 
     res.send('SUCCESS');
     return;

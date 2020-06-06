@@ -8,6 +8,7 @@ import { fetchDsl } from '../logic/dsl';
 import Counter from '../components/Counter';
 
 import { TimeData } from '../types';
+import Button from '../components/Button/Button';
 
 let updateInterval: NodeJS.Timeout;
 
@@ -72,7 +73,15 @@ function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
     <div style={{ marginTop: '1em' }}>
       {dslData ? (
         <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+          <span style={{ fontSize: '36px', textAlign: 'center' }}>It Has Been</span>
+          <div
+            style={{
+              display: 'flex',
+              flexDirection: 'column',
+              alignItems: 'center',
+              marginTop: '0.5em'
+            }}
+          >
             <div style={{ display: 'flex' }}>
               {timeData.years ? <Counter value={timeData.years} label='Years' /> : null}
               <Counter value={timeData.days} label='Days' />
@@ -84,18 +93,14 @@ function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
             </div>
           </div>
           <span style={{ fontSize: '36px', textAlign: 'center', marginTop: '0.5em' }}>
-            Since Last {dslData.name}
+            Since The Last {dslData.name}
           </span>
 
           <p>
             This counter has been reset {dslData.triggers} {plural(dslData.triggers, 'time')}.
           </p>
 
-          {dslData.createdBy === userId && (
-            <div>
-              <button onClick={handleResetClick}>Reset to 0</button>
-            </div>
-          )}
+          {dslData.createdBy === userId && <Button onClick={handleResetClick}>Reset to 0</Button>}
         </div>
       ) : (
         'Loading...'

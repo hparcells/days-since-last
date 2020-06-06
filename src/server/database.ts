@@ -44,6 +44,9 @@ export async function resetDsl(id: number) {
     .collection('dsls')
     .updateOne({ id }, { $inc: { triggers: 1 }, $set: { lastTrigger: Date.now() } });
 }
+export async function deleteDsl(id: number) {
+  await database.collection('dsls').deleteOne({ id });
+}
 export async function profileExists(id: string) {
   return (await database.collection('profiles').find({ id }).count()) === 1;
 }

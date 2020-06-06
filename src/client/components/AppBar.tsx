@@ -2,6 +2,8 @@ import React from 'react';
 import GoogleLogin from 'react-google-login';
 import { useHistory } from 'react-router-dom';
 
+import Button from './Button/Button';
+
 import { LoginInfo } from '../../shared/types';
 
 function AppBar({
@@ -16,6 +18,9 @@ function AppBar({
   function onLoginError(error: any) {
     console.log(error);
   }
+  function handleHomeClick() {
+    history.push('/');
+  }
   function handleCreateClick() {
     history.push('/create');
   }
@@ -25,13 +30,15 @@ function AppBar({
 
   return (
     <div style={{ display: 'flex', backgroundColor: '#dcdcdc', height: '75px' }}>
-      <div style={{ flexGrow: 1 }}>
-        <p>Days Since Last</p>
+      <div style={{ flexGrow: 1, alignSelf: 'center', marginLeft: '0.5em' }}>
+        <img src='/icon/favicon-57.png' onClick={handleHomeClick} />
       </div>
 
       {login ? (
         <div style={{ display: 'flex', alignItems: 'center', margin: '0.5em' }}>
-          <button onClick={handleCreateClick}>+ New</button>
+          <Button onClick={handleCreateClick} style={{ marginRight: '1em' }}>
+            + New
+          </Button>
 
           <img
             src={login.profilePicture}

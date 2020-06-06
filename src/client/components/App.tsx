@@ -30,13 +30,13 @@ function App() {
     <Router>
       <AppBar login={login} handleLogin={handleLogin} />
 
-      <div style={{ maxWidth: '1000px', margin: 'auto' }}>
+      <div style={{ maxWidth: '1000px', margin: 'auto', padding: '0px 0.5em' }}>
         <Switch>
           <Route path='/dsl/:dslId'>
             <DaysSinceLast userId={login && login.userId} token={login && login.token} />
           </Route>
           <Route path='/profile/:userId'>
-            <Profile />
+            <Profile userId={login && login.userId} token={login && login.token} />
           </Route>
           <Route path='/create'>
             <Creation token={login && login.token} />
