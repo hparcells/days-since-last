@@ -1,6 +1,7 @@
-import { app, rootRouter } from 'fullstack-system';
+import { io, app, rootRouter } from 'fullstack-system';
 import { config as setupDotEnv } from 'dotenv';
 import bodyParser from 'body-parser';
+import { Socket } from 'socket.io';
 
 import {
   setupDatabase,
@@ -51,6 +52,9 @@ app.post('/api/dsl/reset', async (req, res) => {
     resetDsl(req.body.id);
 
     res.send('SUCCESS');
+
+    io.sockets.to(req.body.id).emit('reset');
+
     return;
   }
 
@@ -97,4 +101,11 @@ app.get('/api/profile/dsls/:userId', async (req, res) => {
 app.get('*', (req, res, next) => {
   req.url = '/';
   rootRouter(req, res, next);
+});
+
+io.on('connection', (socket: Socket) => {
+  socket.on('joinRoom', (room: string) => {
+    socket.leaveAll();
+    socket.join(room);
+  });
 });

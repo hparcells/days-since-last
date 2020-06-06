@@ -5,6 +5,8 @@ import axios from 'axios';
 import { formatDate } from '@reverse/date';
 import { removeAt } from '@reverse/array';
 
+import socket from '../socket';
+
 import { fetchDsl } from '../logic/dsl';
 
 import Counter from '../components/Counter';
@@ -101,7 +103,18 @@ function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
   }
 
   useEffect(() => {
+    socket.emit('joinRoom', dslId);
     getDslData();
+
+    function handleReset() {
+      clearInterval(updateInterval);
+      getDslData();
+    }
+
+    socket.on('reset', handleReset);
+    return () => {
+      socket.removeListener('reset', handleReset);
+    };
   }, []);
   useEffect(() => {
     updateTimeData();
@@ -133,7 +146,7 @@ function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
 
       if (!notification.sent && notification.type === 'EXCEEDS') {
         const elapsedTime = (Date.now() - dslData.lastTrigger) / 1000;
-        const triggerTime =
+        let triggerTime =
           notification.years * 31536000 +
           notification.days * 86400 +
           notification.hours * 3600 +
@@ -141,8 +154,25 @@ function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
           notification.seconds;
 
         if (elapsedTime > triggerTime) {
+          const years = Math.floor(triggerTime / 31536000);
+          triggerTime -= years * 31536000;
+          const days = Math.floor(triggerTime / 86400);
+          triggerTime -= days * 86400;
+          const hours = Math.floor(triggerTime / 3600);
+          triggerTime -= hours * 3600;
+          const minutes = Math.floor(triggerTime / 60);
+          triggerTime -= minutes * 60;
+
           new window.Notification(
-            `'Time Since Last ${dslData.name}' has exceeded it's notification threshold.`,
+            `It has been ${years} ${plural(years, 'Year')}, ${days} ${plural(
+              days,
+              'Day'
+            )}, ${hours} ${plural(hours, 'Hour')}, ${minutes} ${plural(
+              minutes,
+              'Minute'
+            )}, and ${triggerTime} ${plural(triggerTime, 'Second')} Since the Last ${
+              dslData.name
+            }.`,
             {
               icon: `${location.origin}/icon/favicon-310.png`
             }
@@ -157,57 +187,61 @@ function DaysSinceLast({ userId, token }: { userId: string; token: string }) {
   return (
     <div style={{ marginTop: '1em' }}>
       {dslData ? (
-        <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
-          <span style={{ fontSize: '36px', textAlign: 'center' }}>It Has Been</span>
-          <div
-            style={{
-              display: 'flex',
-              flexDirection: 'column',
-              alignItems: 'center',
-              marginTop: '0.5em'
-            }}
-          >
-            <div style={{ display: 'flex' }}>
-              {timeData.years ? <Counter value={timeData.years} label='Years' /> : null}
-              <Counter value={timeData.days} label='Days' />
+        dslData === 404 ? (
+          'Not found.'
+        ) : (
+          <div style={{ display: 'flex', flexDirection: 'column', alignItems: 'center' }}>
+            <span style={{ fontSize: '36px', textAlign: 'center' }}>It Has Been</span>
+            <div
+              style={{
+                display: 'flex',
+                flexDirection: 'column',
+                alignItems: 'center',
+                marginTop: '0.5em'
+              }}
+            >
+              <div style={{ display: 'flex' }}>
+                {timeData.years ? <Counter value={timeData.years} label='Years' /> : null}
+                <Counter value={timeData.days} label='Days' />
+              </div>
+              <div style={{ display: 'flex', marginTop: '0.5em' }}>
+                <Counter value={timeData.hours} label='Hours' />
+                <Counter value={timeData.minutes} label='Minutes' />
+                <Counter value={timeData.seconds} label='Seconds' />
+              </div>
             </div>
-            <div style={{ display: 'flex', marginTop: '0.5em' }}>
-              <Counter value={timeData.hours} label='Hours' />
-              <Counter value={timeData.minutes} label='Minutes' />
-              <Counter value={timeData.seconds} label='Seconds' />
-            </div>
+            <span style={{ fontSize: '36px', textAlign: 'center', marginTop: '0.5em' }}>
+              Since The Last {dslData.name}
+            </span>
+
+            <p>
+              This counter has been reset {dslData.triggers} {plural(dslData.triggers, 'time')}{' '}
+              since {formatDate(new Date(dslData.createdOn))}.
+            </p>
+
+            {dslData.createdBy === userId && (
+              <Button onClick={handleResetClick} disabled={!canReset}>
+                Reset to 0
+              </Button>
+            )}
+
+            <h2>Notifications</h2>
+
+            {notifications.map((notification, index) => {
+              return (
+                <NotificationOptions
+                  key={index}
+                  notificationData={notification}
+                  index={index}
+                  handleNotificationChange={handleNotificationChange}
+                  handleNotificationDelete={handleNotificationDelete}
+                />
+              );
+            })}
+
+            <Button onClick={handleNewNotification}>New Notification</Button>
           </div>
-          <span style={{ fontSize: '36px', textAlign: 'center', marginTop: '0.5em' }}>
-            Since The Last {dslData.name}
-          </span>
-
-          <p>
-            This counter has been reset {dslData.triggers} {plural(dslData.triggers, 'time')} since{' '}
-            {formatDate(new Date(dslData.createdOn))}.
-          </p>
-
-          {dslData.createdBy === userId && (
-            <Button onClick={handleResetClick} disabled={!canReset}>
-              Reset to 0
-            </Button>
-          )}
-
-          <h2>Notifications</h2>
-
-          {notifications.map((notification, index) => {
-            return (
-              <NotificationOptions
-                key={index}
-                notificationData={notification}
-                index={index}
-                handleNotificationChange={handleNotificationChange}
-                handleNotificationDelete={handleNotificationDelete}
-              />
-            );
-          })}
-
-          <Button onClick={handleNewNotification}>New Notification</Button>
-        </div>
+        )
       ) : (
         'Loading...'
       )}
