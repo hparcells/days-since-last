@@ -19,6 +19,11 @@ function DaysSinceLast() {
     seconds: 0
   });
 
+  function getDslData() {
+    fetchDsl(dslId).then((response) => {
+      setDslData(response.data);
+    });
+  }
   function updateTimeData() {
     if (!dslData) {
       return;
@@ -39,14 +44,13 @@ function DaysSinceLast() {
   }
 
   useEffect(() => {
-    fetchDsl(dslId).then((response) => {
-      setDslData(response.data);
-
+    getDslData();
+  }, []);
+  useEffect(() => {
+    updateTimeData();
+    setInterval(() => {
       updateTimeData();
-      setInterval(() => {
-        updateTimeData();
-      }, 1000);
-    });
+    }, 1000);
   }, [dslData]);
 
   return (

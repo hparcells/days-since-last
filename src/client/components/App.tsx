@@ -19,7 +19,7 @@ function App() {
       name: googleUser.getBasicProfile().getName(),
       profilePicture: googleUser.getBasicProfile().getImageUrl(),
       token: idToken,
-      userId: await axios.get('/api/userId', { headers: { token: idToken } })
+      userId: (await axios.get('/api/userId', { headers: { token: idToken } })).data
     });
   }
 

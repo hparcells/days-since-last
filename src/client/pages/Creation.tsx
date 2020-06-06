@@ -42,7 +42,6 @@ function Creation({ login }: { login: LoginInfo }) {
 
   return login ? (
     <div>
-      {login}
       <h1>Create a New Counter</h1>
       <div style={{ maxWidth: '900px', margin: 'auto' }}>
         <span>
