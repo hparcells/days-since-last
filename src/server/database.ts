@@ -22,7 +22,7 @@ export function setupDatabase() {
 export async function idExists(id: number) {
   return (await database.collection('dsls').find({ id }).count()) === 1;
 }
-export async function getDsl(id: number) {
+export async function getDsl(id: number): Promise<Dsl> {
   return (await database.collection('dsls').find({ id }).toArray())[0];
 }
 export async function addDsl(name: string, createdBy: string) {
@@ -34,7 +34,8 @@ export async function addDsl(name: string, createdBy: string) {
     createdBy,
     createdOn: Date.now(),
     triggers: 0,
-    lastTrigger: Date.now()
+    lastTrigger: Date.now(),
+    visibility: 'PUBLIC'
   } as Dsl);
 
   return id;
@@ -46,6 +47,17 @@ export async function resetDsl(id: number) {
 }
 export async function deleteDsl(id: number) {
   await database.collection('dsls').deleteOne({ id });
+}
+export async function toggleDslVisibility(id: number) {
+  const dsl = await getDsl(id);
+  const newVisibility = dsl.visibility === 'PUBLIC' ? 'UNLISTED' : 'PUBLIC';
+
+  await database.collection('dsls').updateOne(
+    { id },
+    {
+      $set: { visibility: newVisibility }
+    }
+  );
 }
 export async function profileExists(id: string) {
   return (await database.collection('profiles').find({ id }).count()) === 1;
@@ -66,6 +78,25 @@ export async function getProfileDsls(userId: string) {
   return await database
     .collection('dsls')
     .find({ createdBy: userId })
+    .project({ _id: false, id: true, name: true, visibility: true })
+    .toArray();
+}
+export async function getRecentDsls(count: number = 10) {
+  return await database
+    .collection('dsls')
+    .aggregate([
+      {
+        $sort: {
+          createdOn: -1
+        }
+      },
+      {
+        $match: { visibility: 'PUBLIC' }
+      },
+      {
+        $limit: count
+      }
+    ])
     .project({ _id: false, id: true, name: true })
     .toArray();
 }

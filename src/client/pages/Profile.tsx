@@ -1,18 +1,21 @@
 import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
+import { capitalize } from '@reverse/string';
 
-import { Profile as IProfile, BasicDsl } from '../../shared/types';
+import { Profile as IProfile, BasicDsl, Visibility } from '../../shared/types';
 
 function DslListItem({
   name,
   id,
+  visibility,
   admin,
   token,
   refreshList
 }: {
   name: string;
   id: number;
+  visibility: Visibility;
   admin: boolean;
   token: string;
   refreshList: () => void;
@@ -41,6 +44,18 @@ function DslListItem({
       }
     }
   }
+  async function handleVisibilityClick() {
+    const response = (
+      await axios.post('/api/dsl/toggle-visibility', {
+        id,
+        token
+      })
+    ).data;
+
+    if (response === 'SUCCESS') {
+      refreshList();
+    }
+  }
 
   return (
     <div style={{ cursor: 'default', userSelect: 'none' }}>
@@ -48,6 +63,9 @@ function DslListItem({
       {admin && (
         <div>
           <ul>
+            <li onClick={handleVisibilityClick}>
+              {capitalize(visibility.toLowerCase())} (Click to toggle.)
+            </li>
             <li onClick={handleDeleteClick}>
               {deleteClicks > 0 ? 'Are you sure? (Click again to delete.)' : 'Delete'}
             </li>
@@ -111,6 +129,7 @@ function Profile({ userId: loginUserId, token }: { userId: string; token: string
                             key={dsl.id}
                             name={dsl.name}
                             id={dsl.id}
+                            visibility={dsl.visibility}
                             admin={loginUserId === userId}
                             refreshList={refreshList}
                             token={token}

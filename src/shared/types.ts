@@ -1,6 +1,9 @@
+export type Visibility = 'PUBLIC' | 'UNLISTED';
+
 export interface BasicDsl {
   id: number;
   name: string;
+  visibility: Visibility;
 }
 export interface Dsl extends BasicDsl {
   createdBy: string;

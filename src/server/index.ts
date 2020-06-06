@@ -13,7 +13,9 @@ import {
   createProfile,
   getProfile,
   getProfileDsls,
-  deleteDsl
+  deleteDsl,
+  getRecentDsls,
+  toggleDslVisibility
 } from './database';
 import { verifyGoogleToken } from './utils/verify-google-token';
 
@@ -71,6 +73,17 @@ app.post('/api/dsl/delete', async (req, res) => {
 
   res.send('FAILURE');
 });
+app.post('/api/dsl/toggle-visibility', async (req, res) => {
+  const token = await verifyGoogleToken(req.body.token);
+  if (token && idExists(req.body.id)) {
+    await toggleDslVisibility(req.body.id);
+
+    res.send('SUCCESS');
+    return;
+  }
+
+  res.send('FAILURE');
+});
 app.post('/api/profile/create', async (req, res) => {
   const token = await verifyGoogleToken(req.body.token);
   if (token && !profileExists(req.body.id)) {
@@ -96,6 +109,9 @@ app.get('/api/profile/dsls/:userId', async (req, res) => {
   }
 
   res.send('FAILURE');
+});
+app.get('/api/feed/recent', async (req, res) => {
+  res.send(await getRecentDsls());
 });
 
 app.get('*', (req, res, next) => {
