@@ -2,7 +2,7 @@ import React, { useState, useEffect } from 'react';
 import { useParams, useHistory } from 'react-router-dom';
 import axios from 'axios';
 
-import { Profile as IProfile, BasicDsl, LoginInfo } from '../../shared/types';
+import { Profile as IProfile, BasicDsl } from '../../shared/types';
 
 function DslListItem({
   name,
@@ -19,21 +19,26 @@ function DslListItem({
 }) {
   const history = useHistory();
 
-  const [optionsOpen, setOptionsOpen] = useState<boolean>(false);
+  const [deleteClicks, setDeleteClicks] = useState<number>(0);
 
   function handleClick() {
     history.push(`/dsl/${id}`);
   }
   async function handleDeleteClick() {
-    const response = (
-      await axios.post('/api/dsl/delete', {
-        id,
-        token
-      })
-    ).data;
+    const newClickCount = deleteClicks + 1;
+    setDeleteClicks(newClickCount);
 
-    if (response === 'SUCCESS') {
-      refreshList();
+    if (newClickCount === 2) {
+      const response = (
+        await axios.post('/api/dsl/delete', {
+          id,
+          token
+        })
+      ).data;
+
+      if (response === 'SUCCESS') {
+        refreshList();
+      }
     }
   }
 
@@ -43,7 +48,9 @@ function DslListItem({
       {admin && (
         <div>
           <ul>
-            <li onClick={handleDeleteClick}>Delete</li>
+            <li onClick={handleDeleteClick}>
+              {deleteClicks > 0 ? 'Are you sure? (Click again to delete.)' : 'Delete'}
+            </li>
           </ul>
         </div>
       )}
@@ -97,18 +104,20 @@ function Profile({ userId: loginUserId, token }: { userId: string; token: string
               <h2>Counters</h2>
               <ul>
                 {profileDsls
-                  ? profileDsls.map((dsl) => {
-                      return (
-                        <DslListItem
-                          key={dsl.id}
-                          name={dsl.name}
-                          id={dsl.id}
-                          admin={loginUserId === userId}
-                          refreshList={refreshList}
-                          token={token}
-                        />
-                      );
-                    })
+                  ? profileDsls.length > 0
+                    ? profileDsls.map((dsl) => {
+                        return (
+                          <DslListItem
+                            key={dsl.id}
+                            name={dsl.name}
+                            id={dsl.id}
+                            admin={loginUserId === userId}
+                            refreshList={refreshList}
+                            token={token}
+                          />
+                        );
+                      })
+                    : 'None.'
                   : 'Loading...'}
               </ul>
             </div>

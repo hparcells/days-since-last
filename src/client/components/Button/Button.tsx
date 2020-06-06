@@ -1,4 +1,5 @@
 import React from 'react';
+import clsx from 'clsx';
 
 import classes from './Button.module.scss';
 
@@ -13,8 +14,19 @@ function Button({
   disabled?: boolean;
   onClick: () => any;
 }) {
+  function handleClick() {
+    if (!disabled) {
+      onClick();
+    }
+  }
+
   return (
-    <button className={classes.root} onClick={onClick} style={style} disabled={disabled}>
+    <button
+      className={clsx(classes.root, disabled && classes.disabled)}
+      onClick={handleClick}
+      style={style}
+      disabled={disabled}
+    >
       {children}
     </button>
   );

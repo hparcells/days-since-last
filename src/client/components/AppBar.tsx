@@ -16,7 +16,7 @@ function AppBar({
   const history = useHistory();
 
   function onLoginError(error: any) {
-    console.log(error);
+    throw new Error(error);
   }
   function handleHomeClick() {
     history.push('/');
@@ -42,7 +42,7 @@ function AppBar({
 
           <img
             src={login.profilePicture}
-            style={{ width: '65px', height: '65px' }}
+            style={{ width: '65px', height: '65px', borderRadius: '90px' }}
             onClick={handleProfileClick}
           />
         </div>
